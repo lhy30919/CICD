@@ -33,17 +33,13 @@ pipeline {
             }
         }
 
-        stage('Get ArgoCD Server Info') {
+        stage('Get ArgoCD Server Port') {
             steps {
                 script {
-                    // NodePort 가져오기
-                    def port = sh(script: 'kubectl get svc argocd-server -n argocd -o=jsonpath="{.spec.ports[0].nodePort}"', returnStdout: true).trim()
-                    
-                    // 외부 IP 가져오기
-                    def ip = sh(script: 'kubectl get nodes -o=jsonpath="{.items[0].status.addresses[?(@.type==\'ExternalIP\')].address}"', returnStdout: true).trim()
-
-                    // ArgoCD 서버 URL 설정
-                    env.ARGOCD_SERVER = "${ip}:${port}"
+                    // ArgoCD 서버 포트 동적으로 가져오기
+                    def port = sh(script: 'kubectl get services argocd-server -n argocd -o=jsonpath="{.spec.ports[0].nodePort}"', returnStdout: true).trim()
+                    // ARGOCD_SERVER 환경 변수에 ArgoCD 서버 IP와 포트 설정
+                    env.ARGOCD_SERVER = "172.16.104.40:${port}"
                     echo "ArgoCD Server is available at ${env.ARGOCD_SERVER}"
                 }
             }
@@ -52,6 +48,9 @@ pipeline {
         stage('ArgoCD Login') {
             steps {
                 script {
+                    // ARGOCD_SERVER 환경 변수 값이 제대로 설정되었는지 확인
+                    echo "ARGOCD_SERVER: ${env.ARGOCD_SERVER}"
+
                     // ArgoCD 로그인
                     sh '''
                     set -e
