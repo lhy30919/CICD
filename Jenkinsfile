@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'haeyoun/CICD'
+        IMAGE_NAME = 'haeyoun/cicd'
         REGISTRY_CREDENTIALS = 'dockerhub-creds'
     }
 

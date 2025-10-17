@@ -1,0 +1,20 @@
+# Jenkins LTS 이미지 기반
+FROM jenkins/jenkins:lts
+
+USER root
+
+# 필수 패키지 설치 및 Docker CLI 설치 (Debian Bullseye 기준)
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    lsb-release && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bullseye stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+USER jenkins
+
