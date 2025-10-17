@@ -37,10 +37,14 @@ pipeline {
             steps {
                 script {
                     // ArgoCD 서버 포트 동적으로 가져오기
-                    def port = sh(script: 'kubectl get services argocd-server -n argocd -o=jsonpath="{.spec.ports[0].nodePort}"', returnStdout: true).trim()
+                    def port = sh(script: "kubectl get svc argocd-server -n argocd -o=jsonpath='{.spec.ports[0].nodePort}'", returnStdout: true).trim()
                     // ARGOCD_SERVER 환경 변수에 ArgoCD 서버 IP와 포트 설정
-                    env.ARGOCD_SERVER = "172.16.104.40:${port}"
-                    echo "ArgoCD Server is available at ${env.ARGOCD_SERVER}"
+                    if (port) {
+                        env.ARGOCD_SERVER = "172.16.104.40:${port}"
+                        echo "ArgoCD Server is available at ${env.ARGOCD_SERVER}"
+                    } else {
+                        error "Failed to get ArgoCD Server port."
+                    }
                 }
             }
         }
