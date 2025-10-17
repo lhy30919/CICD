@@ -33,13 +33,17 @@ pipeline {
             }
         }
 
-        stage('Get ArgoCD Server Port') {
+        stage('Get ArgoCD Server Info') {
             steps {
                 script {
-                    // ArgoCD 서버 포트 동적으로 가져오기
+                    // NodePort 가져오기
                     def port = sh(script: 'kubectl get svc argocd-server -n argocd -o=jsonpath="{.spec.ports[0].nodePort}"', returnStdout: true).trim()
-                    // ARGOCD_SERVER 환경 변수에 ArgoCD 서버 IP와 포트 설정
-                    env.ARGOCD_SERVER = "172.16.104.40:${port}"
+                    
+                    // 외부 IP 가져오기
+                    def ip = sh(script: 'kubectl get nodes -o=jsonpath="{.items[0].status.addresses[?(@.type==\'ExternalIP\')].address}"', returnStdout: true).trim()
+
+                    // ArgoCD 서버 URL 설정
+                    env.ARGOCD_SERVER = "${ip}:${port}"
                     echo "ArgoCD Server is available at ${env.ARGOCD_SERVER}"
                 }
             }
